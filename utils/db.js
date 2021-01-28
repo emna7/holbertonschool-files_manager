@@ -8,9 +8,9 @@ class DBClient {
     const database = process.env.DB_DATABASE || 'files_manager';
     const url = `mongodb://${host}:${port}/`;
 
-    MongoClient.connect(url, { useUnifiedTopology: true }, (err, db) => {
+    MongoClient.connect(url, (err, client) => {
       if (err) console.log(err);
-      this.db = db.db(database);
+      this.db = client.db(database);
       this.db.createCollection('users');
       this.db.createCollection('files');
     });
@@ -21,14 +21,15 @@ class DBClient {
   }
 
   async nbUsers() {
-    const countUsers = await this.db.collection('users').countDocuments();
-    return countUsers;
+    const numUsers = await this.db.collection('users').countDocuments();
+    return numUsers;
   }
 
   async nbFiles() {
-    const countFiles = await this.db.collection('files').countDocuments();
-    return countFiles;
+    const numFiles = await this.db.collection('files').countDocuments();
+    return numFiles;
   }
 }
+
 const dbClient = new DBClient();
 export default dbClient;

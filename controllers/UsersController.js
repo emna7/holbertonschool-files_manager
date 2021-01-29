@@ -4,57 +4,57 @@ const sha1 = require('sha1');
 
 /* eslint-disable */
 export async function postNew(req, res) {
-  try {
-    const userEmail = req.body.email;
-    const userPassword = req.body.password;
 
-    if (!userEmail) {
-      res.status(400).send({
-        error: 'Missing email',
-      });
-      return;
-    }
+	try {
+		const userEmail = req.body.email;
+		if (!userEmail) {
+			return res.status(400).send({
+				error: 'Missing email',
+			});
+		}
 
-    if (!userPassword) {
-      res.status(400).send({
-        error: 'Missing password',
-      });
-      return;
-    }
+		const userPassword = req.body.password;
+		if (!userPassword) {
+			return res.status(400).send({
+				error: 'Missing password',
+			});
+		}
+		
+		await dbClient.db.collection('users').findOne(
+			{ email: userEmail }, (err, result) => {
+				if (err) {
+					console.log(err);
+				} else if (result) {
+					return res.status(400).send({
+						error: 'Already exist',
+					});					
+				}
+			},
+		);
 
-    const existingEmail = dbClient.collection('users').findOne(
-      { email: userEmail }, (err) => {
-        if (err) throw err;
-      },
-    );
+		let userId;
+		const hashedPw = sha1(userPassword);
+		const newUser = {
+			email: userEmail,
+			password: hashedPw,
+		};
 
-    if (existingEmail) {
-      res.status(400).send({
-        error: 'Already exist',
-      });
-      return;
-    }
+		await dbClient.db.collection('users').insertOne(newUser, (err) => {
+			if (err) {
+				return res.send(err);
+			} else {
+				userId = newUser._id;
+				return res.status(201).send({
+					email: userEmail,
+					id: userId,
+				});
+			}
+		});
 
-    let userId;
-    const hashedPw = sha1(userPassword);
-    const newUser = {
-      email: userEmail,
-      password: hashedPw,
-    };
-
-    await dbClient.collection('users').insertOne(newUser, (err) => {
-      if (err) throw err;
-      userId = newUser._id;
-    });
-
-    res.json({
-      email: userEmail,
-      id: userId,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({
-      error: 'Server error',
-    });
-  }
+	} catch (error) {
+		console.log(error);
+		return res.status(500).send({
+			error: 'Server error',
+		});
+	}
 }

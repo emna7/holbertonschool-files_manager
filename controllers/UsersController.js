@@ -1,5 +1,7 @@
 /* eslint-disable */
+import { ObjectId } from 'mongodb';
 import dbClient from '../utils/db';
+import redisClient from '../utils/redis';
 
 const sha1 = require('sha1');
 
@@ -53,4 +55,24 @@ export async function postNew(req, res) {
 			error: 'Server error',
 		});
 	}
+}
+
+
+export async function getMe(req, res) {
+	let token = req.headers['x-token'] || '';
+	let userId = await redisClient.get(`auth_${token}`);
+	let user;
+
+	if (!userId) {
+		return res.status(401).send({
+			'error': 'Unauthorized',
+		});
+	}
+
+	user = await dbClient.db.collection('users').findOne({ _id: ObjectId(userId), });
+
+	return res.status(200).send({
+		'email': user.email,
+		'id': userId,
+	});
 }

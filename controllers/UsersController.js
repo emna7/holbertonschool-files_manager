@@ -1,8 +1,8 @@
+/* eslint-disable */
 import dbClient from '../utils/db';
 
 const sha1 = require('sha1');
 
-/* eslint-disable */
 export async function postNew(req, res) {
 
 	try {

@@ -17,4 +17,4 @@
 	- How to store temporary data in Redis
 	- How to setup and use a background worker
 
-	
+## Requirements

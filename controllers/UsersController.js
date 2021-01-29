@@ -20,17 +20,12 @@ export async function postNew(req, res) {
 			});
 		}
 		
-		await dbClient.db.collection('users').findOne(
-			{ email: userEmail }, (err, result) => {
-				if (err) {
-					console.log(err);
-				} else if (result) {
-					return res.status(400).send({
-						error: 'Already exist',
-					});					
-				}
-			},
-		);
+		let existingEmail = await dbClient.db.collection('users').findOne({ email: userEmail });
+		if (existingEmail) {
+			return res.status(400).send({
+				error: 'Already exist',
+			});
+		}
 
 		let userId;
 		const hashedPw = sha1(userPassword);
@@ -39,17 +34,19 @@ export async function postNew(req, res) {
 			password: hashedPw,
 		};
 
-		await dbClient.db.collection('users').insertOne(newUser, (err, res) => {
-			if (err) {
-				return res.send(err);
-			} else {
+		try {
+			await dbClient.db.collection('users').insertOne(newUser, (err) => {
 				userId = newUser._id;
 				return res.status(201).send({
 					email: userEmail,
 					id: userId,
 				});
-			}
-		});
+			});
+		} catch (err) {
+			return res.status(err.status).send({
+				'error': err,
+			});
+		}
 
 	} catch (error) {
 		return res.status(500).send({

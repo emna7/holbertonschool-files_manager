@@ -39,7 +39,7 @@ export async function postNew(req, res) {
 			password: hashedPw,
 		};
 
-		await dbClient.db.collection('users').insertOne(newUser, (err) => {
+		await dbClient.db.collection('users').insertOne(newUser, (err, res) => {
 			if (err) {
 				return res.send(err);
 			} else {
@@ -52,7 +52,6 @@ export async function postNew(req, res) {
 		});
 
 	} catch (error) {
-		console.log(error);
 		return res.status(500).send({
 			error: 'Server error',
 		});

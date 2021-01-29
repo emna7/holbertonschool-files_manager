@@ -17,10 +17,5 @@ export async function getStats(req, res) {
     files: nbFiles,
   };
 
-  // console.log("----------------------------------------");
-
-  // console.log(typeof(nbUsers));
-
-  // console.log("----------------------------------------");
   res.status(200).send(result);
 }

@@ -37,10 +37,11 @@ export async function getConnect(req, res) {
 	}
 	
 	let token = uuidv4();
+	let dayInSeconds = 60 * 60 * 24;
 	await redisClient.set(
 		`auth_${token}`,
 		user._id,
-		86400
+		dayInSeconds
 	);
 
 	return res.status(200).send({
@@ -51,6 +52,13 @@ export async function getConnect(req, res) {
 // GET /disconnect should sign-out the user based on the token
 export async function getDisconnect(req, res) {
 	let token = req.headers['x-token'] || '';
+
+	if (!token) {
+		return res.status(401).send({
+			'error': 'Unauthorized',
+		});
+	}
+
 	let userId = null;
 	userId = await redisClient.get(`auth_${token}`);
 

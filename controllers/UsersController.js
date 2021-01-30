@@ -61,6 +61,13 @@ export async function postNew(req, res) {
 // GET /users/me should retrieve the user base on the token used
 export async function getMe(req, res) {
 	let token = req.headers['x-token'] || '';
+
+	if (!token) {
+		return res.status(401).send({
+			'error': 'Unauthorized',
+		});
+	}
+	
 	let userId = await redisClient.get(`auth_${token}`);
 	let user;
 
@@ -73,7 +80,7 @@ export async function getMe(req, res) {
 	user = await dbClient.db.collection('users').findOne({ _id: ObjectId(userId), });
 
 	return res.status(200).send({
+		'id': user._id,
 		'email': user.email,
-		'id': userId,
 	});
 }

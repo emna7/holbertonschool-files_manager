@@ -23,3 +23,5 @@
 	- All your files should end with a new line
 	- Your code should use the js extension
 	- Your code will be verified against lint using ESLint
+
+## Provided files

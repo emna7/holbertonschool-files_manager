@@ -25,3 +25,4 @@
 	- Your code will be verified against lint using ESLint
 
 ## Provided files
+	* package.json

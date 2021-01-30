@@ -26,3 +26,5 @@
 
 ## Provided files
 	* package.json
+	* .eslintrc.js
+

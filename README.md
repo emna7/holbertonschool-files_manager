@@ -27,4 +27,4 @@
 ## Provided files
 	* package.json
 	* .eslintrc.js
-
+	* babel.config.js

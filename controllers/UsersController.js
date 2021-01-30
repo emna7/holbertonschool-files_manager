@@ -5,6 +5,7 @@ import redisClient from '../utils/redis';
 
 const sha1 = require('sha1');
 
+// POST /users should create a new user in DB
 export async function postNew(req, res) {
 
 	try {
@@ -57,7 +58,7 @@ export async function postNew(req, res) {
 	}
 }
 
-
+// GET /users/me should retrieve the user base on the token used
 export async function getMe(req, res) {
 	let token = req.headers['x-token'] || '';
 	let userId = await redisClient.get(`auth_${token}`);

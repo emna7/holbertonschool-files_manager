@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 const sha1 = require('sha1');
 
+// GET /connect should sign-in the user by generating a new authentication token
 export async function getConnect(req, res) {
 	let authCredentials = '';
 
@@ -47,6 +48,7 @@ export async function getConnect(req, res) {
 	});
 }
 
+// GET /disconnect should sign-out the user based on the token
 export async function getDisconnect(req, res) {
 	let token = req.headers['x-token'] || '';
 	let userId = null;

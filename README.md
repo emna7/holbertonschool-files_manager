@@ -22,3 +22,9 @@
 	- All your files will be interpreted/compiled on Ubuntu 18.04 LTS using node (version 12.x.x)
 	- All your files should end with a new line
 	- Your code should use the js extension
+	- Your code will be verified against lint using ESLint
+
+## Provided files
+	* package.json
+	* .eslintrc.js
+	* babel.config.js

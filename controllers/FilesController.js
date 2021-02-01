@@ -23,7 +23,7 @@ export async function postUpload(req, res) {
 
 	user = await dbClient.db.collection('users').findOne({ _id: ObjectId(userId), });
 
-	let { name, type, parentId, isPublic = false, data } = req.body;
+	let { name, type, parentId = 0, isPublic = false, data = undefined } = req.body;
 
 	if (!name) {
 		return res.status(400).send({
@@ -44,7 +44,7 @@ export async function postUpload(req, res) {
 	}
 
 	if (parentId) {
-		file = await dbClient.db.collection('files').findOne({ parentId, });
+		file = await dbClient.db.collection('files').findOne({ _id: ObjectId(parentId), });
 		if (!file) {
 			res.status(400).send({
 				'error': 'Parent not found',

@@ -109,7 +109,7 @@ export async function postUpload(req, res) {
 			name,
 			type,
 			isPublic,
-			parentId: parentId || 0,
+			parentId,
 			localPath: `${folder_path}/${file_path}`,
 		};
 		await dbClient.db.collection('files').insertOne(currentData, (err, result) => {

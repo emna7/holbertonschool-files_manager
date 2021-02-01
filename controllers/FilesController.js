@@ -43,19 +43,6 @@ export async function postUpload(req, res) {
 		});
 	}
 
-	// if (parentId) {
-	// 	file = await dbClient.db.collection('files').findOne({ _id: ObjectId(parentId), });
-	// 	if (!file) {
-	// 		res.status(400).send({
-	// 			'error': 'Parent not found',
-	// 		})
-	// 	} else if (file.type != 'folder') {
-	// 		res.status(400).send({
-	// 			'error': 'Parent is not a folder',
-	// 		});
-	// 	}
-	// }
-
 	if (parentId) {
 		let isValidParentId = ObjectId.isValid(parentId);	
 		if (isValidParentId) {

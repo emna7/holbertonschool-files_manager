@@ -128,5 +128,95 @@ export async function postUpload(req, res) {
 		// });
 		throw err;
 	}
+}
 
+
+// GET /files/:id should retrieve the file document based on the ID
+export async function getShow(req, res) {
+	let token = req.headers['x-token'] || '';
+	let userId = await redisClient.get(`auth_${token}`);
+	let file, fileId;
+
+	if (!userId || !ObjectId.isValid(userId)) {
+		return res.status(401).send({
+			'error': 'Unauthorized',
+		});
+	}
+
+	fileId = req.params.id;
+
+	if (ObjectId.isValid(fileId) && ObjectId.isValid(userId)) {
+		file = await dbClient.db.collection('files').findOne({
+			_id: ObjectId(fileId),
+			userId: ObjectId(userId),
+		});
+		if (file) {
+			return res.send({
+				id: file._id,
+				userId: file.userId,
+				name: file.name,
+				type: file.type,
+				isPublic: file.isPublic,
+				parentId: file.parentId,
+			});
+		}
+	}
+	return res.status(404).send({
+		'error': 'Not found',
+	});
+}
+
+
+// GET /files should retrieve all users file documents for a specific parentId and with pagination.
+export async function getIndex(req, res) {
+	let token = req.headers['x-token'] || '';
+	let userId = await redisClient.get(`auth_${token}`);
+	let parent, files = [];
+
+	if (!userId || !ObjectId.isValid(userId)) {
+		return res.status(401).send({
+			'error': 'Unauthorized',
+		});
+	}
+
+	let { parentId = 0, page = '0'} = req.query;
+
+	page = Number(page);
+
+	parent = await dbClient.db.collection('files').findOne({
+		type: 'folder',
+		_id: ObjectId(parentId),
+	});
+
+	if (!parent) {
+		return res.send([]);
+	}
+
+	await dbClient.db.collection('files').aggregate([
+		{ $match: { parentId } },
+		{ $skip: page * 20 },
+		{ $limit: 20 },
+	], function(err, data) {
+		if (err) return err;
+		files = data;
+	});
+
+	if (files) {
+		let results = [];
+		await files.forEach((elem) => {
+			results.push({
+				id: elem._id,
+				userId: elem.userId,
+				name: elem.name,
+				type: elem.type,
+				isPublic: elem.isPublic,
+				parentId: elem.parentId
+			});
+		});
+		if (results) {
+			return res.send(results);
+		}
+	}
+
+	return res.send([]);
 }

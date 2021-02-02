@@ -5,8 +5,10 @@ import { ObjectId } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
 
 const fs = require('fs');
-const UsersController = require('../controllers/UsersController');
-const AuthController = require('../controllers/AuthController');
+const mime = require('mime-types')
+
+// const UsersController = require('../controllers/UsersController');
+// const AuthController = require('../controllers/AuthController');
 
 // POST /files should create a new file in DB and in disk
 export async function postUpload(req, res) {
@@ -179,21 +181,23 @@ export async function getIndex(req, res) {
 		});
 	}
 
-	let { parentId = 0, page = '0'} = req.query;
+	let { parentId = 0, page = 0, } = req.query;
 
 	page = Number(page);
 
-	parent = await dbClient.db.collection('files').findOne({
-		type: 'folder',
-		_id: ObjectId(parentId),
-	});
-
-	if (!parent) {
-		return res.send([]);
+	if (parentId !== 0) {
+		parent = await dbClient.db.collection('files').findOne({
+			type: 'folder',
+			_id: ObjectId(parentId),
+		});
+		
+		if (!parent) {
+			return res.send([]);
+		}
 	}
 
 	await dbClient.db.collection('files').aggregate([
-		{ $match: { parentId } },
+		{ $match: { parentId, } },
 		{ $skip: page * 20 },
 		{ $limit: 20 },
 	], function(err, data) {
@@ -325,4 +329,64 @@ export async function putUnpublish(req, res) {
 	return res.status(404).send({
 		'error': 'Not found',
 	});
+}
+
+
+// GET /files/:id/data should return the content of the file document based on the ID
+export async function getFile(req, res) {
+	let token = req.headers['x-token'] || '';
+	let file, fileId, userId, filePath, dataType, isFileExists;
+
+	fileId = req.params.id;
+
+	if (ObjectId.isValid(fileId)) {
+		file = await dbClient.db.collection('files').findOne({
+			_id: ObjectId(fileId),
+		});
+	}
+
+	if (!file) {
+		return res.status(404).send({
+			'error': 'Not found',
+		});
+	}
+
+	if (!file.isPublic) {
+		userId = await redisClient.get(`auth_${token}`);
+
+		if (!userId || !ObjectId.isValid(userId) || file.userId != userId) {
+			return res.status(404).send({
+				'error': 'Not found',
+			});
+		}
+	}
+
+	if (file.type === 'folder') {
+		return res.status(400).send({
+			'error': "A folder doesn't have content",
+		});
+	}
+
+	filePath = file.localPath;
+
+	try {
+		if (fs.existsSync(filePath)) {
+			dataType = mime.lookup(filePath);
+			fs.readFile(filePath, (err, data) => {
+				if (err) {
+					throw err;
+				}
+				res.setHeader('Content-Type', dataType);
+				return res.status(200).send(data);	
+			})
+		} else {
+			return res.status(404).send({
+				'error': 'Not found',
+			});	
+		}
+	} catch(err) {
+		return res.status(404).send({
+			'error': 'Not found',
+		});
+	}
 }

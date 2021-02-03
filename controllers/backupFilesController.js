@@ -5,8 +5,7 @@ import { ObjectId } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
 
 const fs = require('fs');
-const mime = require('mime-types');
-const Queue = require('bull');
+const mime = require('mime-types')
 
 // const UsersController = require('../controllers/UsersController');
 // const AuthController = require('../controllers/AuthController');
@@ -75,7 +74,6 @@ export async function postUpload(req, res) {
 				isPublic,
 			};
 			await dbClient.db.collection('files').insertOne(currentData, (err, result) => {
-				if (err) return err;
 				return res.status(201).send({
 					'id': currentData._id,
 					'userId': currentData.userId,
@@ -117,12 +115,6 @@ export async function postUpload(req, res) {
 			localPath: `${folder_path}/${file_path}`,
 		};
 		await dbClient.db.collection('files').insertOne(currentData, (err, result) => {
-			let fileQueue = new Queue('fileQueue');
-			let fileId = currentData._id;
-			fileQueue.add({
-				userId: userId.toString(),
-				fileId: fileId.toString(),
-			});
 			return res.status(201).send({
 				'id': currentData._id,
 				'userId': currentData.userId,
@@ -343,7 +335,7 @@ export async function putUnpublish(req, res) {
 // GET /files/:id/data should return the content of the file document based on the ID
 export async function getFile(req, res) {
 	let token = req.headers['x-token'] || '';
-	let file, fileId, userId, filePath, dataType, fileSize;
+	let file, fileId, userId, filePath, dataType, isFileExists;
 
 	fileId = req.params.id;
 
@@ -375,12 +367,7 @@ export async function getFile(req, res) {
 		});
 	}
 
-	if (req.params.size) {
-		fileSize = req.params.size;
-		filePath = `${file.localPath}_${fileSize}`;
-	} else {
-		filePath = file.localPath;
-	}
+	filePath = file.localPath;
 
 	try {
 		if (fs.existsSync(filePath)) {

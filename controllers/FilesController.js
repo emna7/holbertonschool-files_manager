@@ -117,12 +117,14 @@ export async function postUpload(req, res) {
 			localPath: `${folder_path}/${file_path}`,
 		};
 		await dbClient.db.collection('files').insertOne(currentData, (err, result) => {
-			let fileQueue = new Queue('fileQueue');
-			let fileId = currentData._id;
-			fileQueue.add({
-				userId: userId.toString(),
-				fileId: fileId.toString(),
-			});
+			if (currentData.type === 'image') {
+				let fileQueue = new Queue('fileQueue');
+				let fileId = currentData._id;
+				fileQueue.add({
+					userId: userId.toString(),
+					fileId: fileId.toString(),
+				});	
+			}
 			return res.status(201).send({
 				'id': currentData._id,
 				'userId': currentData.userId,

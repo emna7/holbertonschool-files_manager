@@ -1,6 +1,6 @@
 const imageThumbnail = require('image-thumbnail');
 
-path = '/tmp/files_manager/6cbd62fc-2116-4a77-aea4-758cba7bef7c';
+path = '/tmp/files_manager/6cbd62fc-2116-4a77-aea4-758cba7bef7c';	
 
 imageThumbnail(path)
 .then(thumbnail => { console.log(thumbnail) })

@@ -3,16 +3,11 @@ import dbClient from './utils/db';
 
 const Queue = require('bull');
 const imageThumbnail = require('image-thumbnail');
+const fs = require('fs');
 
 const fileQueue = new Queue('fileQueue');
 
-let fn = () => fileQueue.process(async (job) => {
-	console.log(
-		'#################################################################'
-	);
-
-	console.log(job);
-
+fileQueue.process(async (job) => {
   if (!job.fileId) {
     throw new Error('Missing fileId');
   }
@@ -28,28 +23,36 @@ let fn = () => fileQueue.process(async (job) => {
   if (!file) {
     throw new Error('File not found');
   } else {
-		filePath = file.localPath;
-		
-		imageThumbnail(`${filePath}_${100}`, { width: 100 })
-		.then(thumbnail => console.log(thumbnail))
-		.catch(error => console.log(error));
+    filePath = file.localPath;
 
-		imageThumbnail(`${filePath}_${250}`, { width: 250 })
-		.then(thumbnail => console.log(thumbnail))
-		.catch(error => console.log(error));
+    imageThumbnail(filePath, { width: 100 })
+      .then(async (thumbnail) => {
+        await fs.writeFile(`${filePath}_${100}`, thumbnail, (error) => {
+          if (error) {
+            throw error;
+          }
+        });
+      })
+      .catch((error) => console.log(error));
 
-		imageThumbnail(`${filePath}_${250}`, { width: 250 })
-		.then(thumbnail => console.log(thumbnail))
-		.catch(error => console.log(error));
+    imageThumbnail(filePath, { width: 250 })
+      .then(async (thumbnail) => {
+        await fs.writeFile(`${filePath}_${250}`, thumbnail, (error) => {
+          if (error) {
+            throw error;
+          }
+        });
+      })
+      .catch((error) => console.log(error));
 
-
-    // let f1 = await imageThumbnail(`${filePath}_${100}`, { width: 100 });
-    // let f2 = await imageThumbnail(`${filePath}_${250}`, { width: 250 });
-		// let f3 = await imageThumbnail(`${filePath}_${250}`, { width: 250 });
-		// if (f1) console.log('------------------------- f1 created -------------------------');
-		// if (f2) console.log('------------------------- f2 created -------------------------');
-		// if (f3) console.log('------------------------- f3 created -------------------------');
+    imageThumbnail(filePath, { width: 250 })
+      .then(async (thumbnail) => {
+        await fs.writeFile(`${filePath}_${250}`, thumbnail, (error) => {
+          if (error) {
+            throw error;
+          }
+        });
+      })
+      .catch((error) => console.log(error));
   }
 });
-
-fn();

@@ -87,3 +87,82 @@ describe('/POST users', () => {
 	});
 
 });
+
+// authCredentials of the user { "email": "bob@dylan.com", "password": "toto1234!" }
+let authCredentials = 'Basic Ym9iQGR5bGFuLmNvbTp0b3RvMTIzNCE=';
+let token = null;
+
+describe('/GET connect', () => {
+	it('User should successfully connect first.', async () => {
+		chai.request(app)
+		.get('/connect')
+		.set('Authorization', authCredentials)
+		.send()
+		.end((err, res, body) => {
+			if (err) throw err;
+			expect(res.ok).to.be.true;
+			expect(res.status).to.equal(200);
+			expect(res.body).to.be.an('object');
+			expect(res.body).to.have.all.keys('token');
+			expect(res.body.token).to.be.a('string');
+			token = res.body.token;
+		});
+	});
+});
+
+describe('/GET /users/me', () => {
+
+	it('Should get current connected user infos.', async () => {
+		chai.request(app)
+		.get('/users/me')
+		.set('X-Token', token)
+		.send({})
+		.end((err, res, body) => {
+			if (err) throw err;
+			expect(res.status).to.equal(200);
+			expect(res.body).to.be.an('object');
+			expect(res.body).to.have.all.keys('id', 'email');
+		});
+	});
+
+	it('Should not get current connected user info.', async () => {
+		chai.request(app)
+		.get('/users/me')
+		.set('X-Token', 'randomToken')
+		.send({})
+		.end((err, res, body) => {
+			if (err) throw err;
+			expect(res.status).to.equal(401);
+			expect(res.body.error).to.equal('Unauthorized');
+		});
+	});
+});
+
+describe('GET /disconnect', () => {
+	it('Should succesfully disconnect.', async () => {
+		chai.request(app)
+		.get('/disconnect')
+		.set('X-Token', token)
+		.send({})
+		.end((err, res, body) => {
+			if (err) throw err;
+			expect(res.ok).to.be.true;
+			expect(res.status).to.equal(204);
+			expect(res.body).to.be.an('object');
+		});
+	});
+});
+
+describe('GET /users/me', () => {
+	it('Should not get current connected user info.', async () => {
+		chai.request(app)
+		.get('/users/me')
+		.set('X-Token', token)
+		.send({})
+		.end((err, res, body) => {
+			if (err) throw err;
+			expect(res.status).to.equal(401);
+			expect(res.body.error).to.equal('Unauthorized');
+		});
+	});
+});

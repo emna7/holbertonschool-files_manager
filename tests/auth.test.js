@@ -14,6 +14,8 @@ let userPassword = '123abc';
 const hashedPassword = sha1(userPassword);
 // const credentials = new Buffer(`${hashedPassword}:${userEmail}`).toString('base64');
 // let authCredentials = `Basic ${credentials}`;
+
+// authCredentials of the user { "email": "bob@dylan.com", "password": "toto1234!" }
 let authCredentials = 'Basic Ym9iQGR5bGFuLmNvbTp0b3RvMTIzNCE=';
 let token = null;
 

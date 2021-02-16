@@ -4,6 +4,8 @@ import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
 
 const sha1 = require('sha1');
+const Queue = require('bull');
+
 
 // POST /users should create a new user in DB
 export async function postNew(req, res) {
@@ -22,7 +24,7 @@ export async function postNew(req, res) {
 				error: 'Missing password',
 			});
 		}
-		
+
 		let existingEmail = await dbClient.db.collection('users').findOne({ email: userEmail });
 		if (existingEmail) {
 			return res.status(400).send({
@@ -40,6 +42,10 @@ export async function postNew(req, res) {
 		try {
 			await dbClient.db.collection('users').insertOne(newUser, (err) => {
 				userId = newUser._id;
+				let userQueue = new Queue('userQueue');
+				userQueue.add({
+					userId: userId.toString(),
+				});
 				return res.status(201).send({
 					email: userEmail,
 					id: userId,

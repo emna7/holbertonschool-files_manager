@@ -123,7 +123,7 @@ export async function postUpload(req, res) {
 				fileQueue.add({
 					userId: userId.toString(),
 					fileId: fileId.toString(),
-				});	
+				});
 			}
 			return res.status(201).send({
 				'id': currentData._id,

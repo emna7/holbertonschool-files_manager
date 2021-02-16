@@ -7,6 +7,8 @@ const fs = require('fs');
 
 const fileQueue = new Queue('fileQueue');
 
+const userQueue = new Queue('userQueue');
+
 fileQueue.process(async (job) => {
   if (!job.fileId) {
     throw new Error('Missing fileId');
@@ -54,5 +56,18 @@ fileQueue.process(async (job) => {
         });
       })
       .catch((error) => console.log(error));
+  }
+});
+
+userQueue.process(async (job) => {
+  if (!job.userId) {
+    throw new Error('Missing userId');
+  }
+
+  let existingUser = await dbClient.db.collection('users').findOne({ id: ObjectId(job.userId) });
+  if (!existingUser) {
+    return new Error('User not found');
+  } else {
+    console.log(`Welcome ${existingUser.email}!`);
   }
 });
